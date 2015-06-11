@@ -87,6 +87,42 @@ median <- median(steps_per_day$steps)
 
 ## What is the average daily activity pattern?
 
+### Calculate Mean Values
+
+```r
+ave_daily_activity <- activity %>% group_by(interval) %>% 
+    summarise(mSteps = mean(steps, na.rm = TRUE))
+
+# convert interval to time
+ave_daily_activity <- ave_daily_activity %>% 
+    mutate(time = sprintf("%04d", interval)) %>% 
+    mutate(time = as.POSIXct(time, format="%H%M", tx="GMT"))
+```
+
+### Time Series Plot: 5-minute interval (x-axis) -- average number of steps taken, averaged across all days (y-axis)
+
+
+```r
+ave_da_time <- ggplot(ave_daily_activity, aes(x = time, y = mSteps))
+ave_da_time <- ave_da_time + geom_line(color = "red2", size = 1)
+ave_da_time <- ave_da_time + scale_x_datetime(breaks = date_breaks("1 hour"), labels = date_format("%I %p"))
+ave_da_time <- ave_da_time + labs(title = "Average Steps per Time of Day", x = "Time of Day", y = "Number of Steps")
+ave_da_time <- ave_da_time + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ave_da_time
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+
+### Interval with the Maximum Step Average 
+
+
+```r
+max_int_df <- ave_daily_activity %>% filter(mSteps == max(mSteps))
+max_int <- max_int_df$interval
+max_ave <- round(max_int_df$mSteps)
+time_of_day <- format(max_int_df$time, format("%I:%M %p"))
+```
+**Interval** = 835 or 08:35 AM with an average of 206
 
 
 ## Imputing missing values
