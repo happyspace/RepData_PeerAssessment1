@@ -5,6 +5,5 @@
 .RData
 .Rprofile
 *.Rproj
-PA1_template_files/
 activity.csv
 repdata-data-activity.zip

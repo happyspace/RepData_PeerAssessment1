@@ -21,7 +21,7 @@ Load libraries _data.table, dplyr, tidyr, lubridate_
     library(tidyr)
     library(ggplot2)
     library(lubridate)
-    library("scales")
+    library(scales)
 ```
 
 Download, unpack and read data set.
@@ -36,7 +36,6 @@ if(!file.exists(file.name.zip)) {
     download.file(url = file.url, destfile = file.name.zip)
     unzip(file.name.zip)
 }
-
 
 colClasses <- c("steps" = "integer", "date" = "POSIXct",  "interval" = "integer")
 
@@ -66,13 +65,15 @@ steps_per_day$qSPD <- cut(steps_per_day$steps,
 
 ```{r echo=TRUE}
 
- steps_hist <- ggplot(data = steps_per_day, aes(steps))
- steps_hist <- steps_hist + geom_histogram(col="red", 
+steps_hist <- ggplot(data = steps_per_day, aes(steps))
+steps_hist <- steps_hist + geom_histogram(col="red", 
                  fill="green", 
                  alpha = .2,
                  binwidth=100)
- steps_hist <- steps_hist + labs(title = "Histogram: Daily Step Totals by Quantile", x = "Number of Steps", y = "Number of Days")
- steps_hist <- steps_hist + facet_wrap(~qSPD, ncol=2, scales="free")
+steps_hist <- steps_hist + labs(title = "Histogram: Daily Step Totals by Quantile", x = "Number of Steps", y = "Number of Days")
+steps_hist <- steps_hist + facet_wrap(~qSPD, ncol=2, scales="free")
+steps_hist <- steps_hist + scale_y_continuous(breaks= pretty_breaks())
+steps_hist <- steps_hist + theme(strip.background = element_blank(), strip.text = element_blank())
 steps_hist
 
 
@@ -102,14 +103,14 @@ ave_daily_activity <- activity %>% group_by(interval) %>%
 # convert interval to time
 ave_daily_activity <- ave_daily_activity %>% 
     mutate(time = sprintf("%04d", interval)) %>% 
-    mutate(time = as.POSIXct(time, format="%H%M", tx="GMT"))
+    mutate(time = as.POSIXct(time, format="%H%M", tz="GMT"))
 ```
 
 ### Time Series Plot: 5-minute interval (x-axis) -- average number of steps taken, averaged across all days (y-axis)
 
 ```{r echo=TRUE}
 ave_da_time <- ggplot(ave_daily_activity, aes(x = time, y = mSteps))
-ave_da_time <- ave_da_time + geom_line(color = "red2", size = 1)
+ave_da_time <- ave_da_time + geom_line(color = "red2", size = .5)
 ave_da_time <- ave_da_time + scale_x_datetime(breaks = date_breaks("1 hour"), labels = date_format("%I %p"))
 ave_da_time <- ave_da_time + labs(title = "Average Steps per Time of Day", x = "Time of Day", y = "Number of Steps")
 ave_da_time <- ave_da_time + theme(axis.text.x = element_text(angle = 90, hjust = 1))
@@ -130,6 +131,15 @@ time_of_day <- format(max_int_df$time, format("%I:%M %p"))
 
 
 ## Imputing missing values
+
+### Total Number of Rows with NAs
+
+```{r echo=TRUE}
+rows_na <- activity %>% filter(!complete.cases(.))
+num_row <- nrow(rows_na)
+
+```
+**Number of rows with NA:** `r num_row`
 
 
 
