@@ -108,7 +108,7 @@ ave_daily_activity <- ave_daily_activity %>%
 ```r
 ave_da_time <- ggplot(ave_daily_activity, aes(x = time, y = mSteps))
 ave_da_time <- ave_da_time + geom_line(color = "red2", size = .5)
-ave_da_time <- ave_da_time + scale_x_datetime(breaks = date_breaks("1 hour"), labels = date_format("%I %p"))
+ave_da_time <- ave_da_time + scale_x_datetime(breaks = date_breaks("1 hour"), minor_breaks = "5 min", labels = date_format("%I %p"))
 ave_da_time <- ave_da_time + labs(title = "Average Steps per Time of Day", x = "Time of Day", y = "Number of Steps")
 ave_da_time <- ave_da_time + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ave_da_time
@@ -228,7 +228,7 @@ imputed_wd_we <- imputed_wd_we %>%
 
 wd_we_activity <- ggplot(data = imputed_wd_we, aes(x = time, y = mean_steps)) 
 wd_we_activity <- wd_we_activity + geom_line(color = "red2", size = .5)
-wd_we_activity <- wd_we_activity + scale_x_datetime(breaks = date_breaks("1 hour"), labels = date_format("%I %p"))
+wd_we_activity <- wd_we_activity + scale_x_datetime(breaks = date_breaks("1 hour"), minor_breaks = "5 min", labels = date_format("%I %p"))
 wd_we_activity <- wd_we_activity + facet_wrap(~dayofweek, nrow=2, scales=("fixed"))
 wd_we_activity <- wd_we_activity + labs(title = "Average Steps Weekday vs Weekend", x = "Time of Day", y = "Number of Steps")
 wd_we_activity <- wd_we_activity + theme(axis.text.x = element_text(angle = 90, hjust = 1))
