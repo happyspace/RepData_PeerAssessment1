@@ -222,7 +222,7 @@ median_imp &lt;- median(imputed$steps_imp)</code></pre>
 <div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>
 <div id="factor-variable-with-two-levels-weekday-and-weekend" class="section level3">
-<h3>Factor variable with two levels  “weekday” and “weekend”</h3>
+<h3>Factor variable with two levels – “weekday” and “weekend”</h3>
 <pre class="r"><code>imputed_full &lt;- imputed_full %&gt;% 
     mutate(dayofweek = chron::is.weekend(imputed_full$date)*1L) %&gt;% 
     mutate(dayofweek = factor(dayofweek, labels = c(&quot;weekend&quot;, &quot;weekday&quot;)))</code></pre>

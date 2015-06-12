@@ -205,7 +205,7 @@ median_imp <- median(imputed$steps_imp)
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-### Factor variable with two levels  "weekday" and "weekend"
+### Factor variable with two levels -- "weekday" and "weekend"
 
 
 ```r
