@@ -81,8 +81,8 @@ mean <- round(mean(steps_per_day$steps))
 median <- median(steps_per_day$steps)
 ```
 
-**mean** = ~ 9354 (rounded to nearest step)  
-**median** = 10395  
+**mean**: ~ 9354 (rounded to nearest step)  
+**median**: 10395  
 
 
 
@@ -123,7 +123,7 @@ max_int <- max_int_df$interval
 max_ave <- round(max_int_df$mSteps)
 time_of_day <- format(max_int_df$time, format("%I:%M %p"))
 ```
-**Interval** = 835 or 08:35 AM with an average of 206
+**Interval**: 835 or 08:35 AM with an average of 206
 
 
 ## Imputing missing values
@@ -136,6 +136,70 @@ rows_na <- activity %>% filter(!complete.cases(.))
 num_row <- nrow(rows_na)
 ```
 **Number of rows with NA:** 2304
+
+### Impute missing values 
+
+Imputation strategy: Randomly select values for a time interval and replace
+
+Simple ramdon sampling based on values from the time interval over the collection period [see @gelmanMissing, pp. 534].
+
+
+```r
+# http://www.stat.columbia.edu/~gelman/arm/missing.pdf see citation above.
+random.imp <- function (a){
+    missing <- is.na(a)
+    n.missing <- sum(missing)
+    a.obs <- a[!missing]
+    imputed <- a
+    imputed[missing] <- sample (a.obs, n.missing, replace=TRUE)
+    return (imputed)
+}
+
+imputed <- activity %>% group_by(interval) %>% mutate(steps_imp = random.imp(steps))
+
+imputed <- imputed %>% 
+    group_by(date) %>% 
+    summarise(steps_imp = sum(steps_imp))
+
+# break steps by quantiles for better plotting
+imputed$qSPD <- cut(imputed$steps_imp, 
+                          breaks = quantile (imputed$steps_imp, probs = c(0, .25, .50, .75, 1)), 
+                          include.lowest = TRUE,
+                          dig.lab = 5)
+```
+
+### Plot of Histogram of the imputed total steps per day. 
+
+
+```r
+steps_hist <- ggplot(data = imputed, aes(steps_imp))
+steps_hist <- steps_hist + geom_histogram(col="red", 
+                 fill="green", 
+                 alpha = .2,
+                 binwidth=100)
+steps_hist <- steps_hist + labs(title = "Histogram: Imputed Daily Step Totals by Quantile", x = "Number of Steps", y = "Number of Days")
+steps_hist <- steps_hist + facet_wrap(~qSPD, ncol=2, scales="free")
+steps_hist <- steps_hist + scale_y_continuous(breaks= pretty_breaks())
+steps_hist <- steps_hist + theme(strip.background = element_blank(), strip.text = element_blank())
+steps_hist
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+
+### Mean and median of the total number of steps taken per day
+
+
+```r
+mean_imp <- format(round(mean(imputed$steps_imp)), scientific = FALSE)
+median_imp <- median(imputed$steps_imp)
+```
+
+**mean**: ~ 9354 (rounded to nearest step)  
+**median**: 10395  
+**vs**  
+**mean imputed**: ~ 10849 (rounded to nearest step)  
+**median imputed**: 11015 
+
 
 
 

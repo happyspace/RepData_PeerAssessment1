@@ -3,6 +3,15 @@ title: "Reproducible Research: Peer Assessment 1"
 output: 
   html_document:
     keep_md: true
+references:
+- id: gelmanMissing
+  title: Data Analysis Using Regression and Multilevel/Hierarchical Models
+  URL: 'http://www.stat.columbia.edu/~gelman/arm/missing.pdf'
+  author:
+  - family: Andrew
+    given: Gelman
+  - family: Jennifer
+    given: Hill
 ---
 
 
@@ -88,8 +97,8 @@ median <- median(steps_per_day$steps)
 
 ```
 
-**mean** = ~ `r mean` (rounded to nearest step)  
-**median** = `r median`  
+**mean**: ~ `r mean` (rounded to nearest step)  
+**median**: `r median`  
 
 
 
@@ -127,7 +136,7 @@ max_ave <- round(max_int_df$mSteps)
 time_of_day <- format(max_int_df$time, format("%I:%M %p"))
 
 ```
-**Interval** = `r max_int` or `r time_of_day` with an average of `r max_ave`
+**Interval**: `r max_int` or `r time_of_day` with an average of `r max_ave`
 
 
 ## Imputing missing values
@@ -140,6 +149,70 @@ num_row <- nrow(rows_na)
 
 ```
 **Number of rows with NA:** `r num_row`
+
+### Impute missing values 
+
+Imputation strategy: Randomly select values for a time interval and replace missing values. [see @gelmanMissing, pp. 534].
+
+```{r echo=TRUE}
+# http://www.stat.columbia.edu/~gelman/arm/missing.pdf see citation above.
+random.imp <- function (a){
+    missing <- is.na(a)
+    n.missing <- sum(missing)
+    a.obs <- a[!missing]
+    imputed <- a
+    imputed[missing] <- sample (a.obs, n.missing, replace=TRUE)
+    return (imputed)
+}
+
+imputed <- activity %>% group_by(interval) %>% mutate(steps_imp = random.imp(steps))
+
+imputed <- imputed %>% 
+    group_by(date) %>% 
+    summarise(steps_imp = sum(steps_imp))
+
+# break steps by quantiles for better plotting
+imputed$qSPD <- cut(imputed$steps_imp, 
+                          breaks = quantile (imputed$steps_imp, probs = c(0, .25, .50, .75, 1)), 
+                          include.lowest = TRUE,
+                          dig.lab = 5)
+
+
+```
+
+### Plot of Histogram of the imputed total steps per day. 
+
+```{r echo=TRUE}
+
+steps_hist <- ggplot(data = imputed, aes(steps_imp))
+steps_hist <- steps_hist + geom_histogram(col="red", 
+                 fill="green", 
+                 alpha = .2,
+                 binwidth=100)
+steps_hist <- steps_hist + labs(title = "Histogram: Imputed Daily Step Totals by Quantile", x = "Number of Steps", y = "Number of Days")
+steps_hist <- steps_hist + facet_wrap(~qSPD, ncol=2, scales="free")
+steps_hist <- steps_hist + scale_y_continuous(breaks= pretty_breaks())
+steps_hist <- steps_hist + theme(strip.background = element_blank(), strip.text = element_blank())
+steps_hist
+
+
+```
+
+### Mean and median of the total number of steps taken per day
+
+```{r echo=TRUE}
+
+mean_imp <- format(round(mean(imputed$steps_imp)), scientific = FALSE)
+median_imp <- median(imputed$steps_imp)
+
+```
+
+**mean**: ~ `r mean` (rounded to nearest step)  
+**median**: `r median`  
+**vs**  
+**mean imputed**: ~ `r mean_imp` (rounded to nearest step)  
+**median imputed**: `r median_imp` 
+
 
 
 
