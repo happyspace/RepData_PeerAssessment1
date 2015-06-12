@@ -141,7 +141,7 @@ num_row <- nrow(rows_na)
 
 ### Impute missing values 
 
-Imputation strategy: Randomly select values for a time interval and replace missing values. [see @gelmanMissing, pp. 534].
+Imputation strategy: Randomly select from existing values of the same time interval to replace missing values. [see @gelmanMissing, pp. 534].
 
 
 ```r
@@ -205,7 +205,7 @@ median_imp <- median(imputed$steps_imp)
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-### Factor variable with two levels  weekday and weekend
+### Factor variable with two levels  "weekday" and "weekend"
 
 
 ```r
@@ -214,7 +214,6 @@ imputed_full <- imputed_full %>%
     mutate(dayofweek = factor(dayofweek, labels = c("weekend", "weekday")))
 ```
 ### Plot weekdays vs weekends average activity
-
 
 
 

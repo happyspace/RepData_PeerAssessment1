@@ -172,7 +172,7 @@ num_row &lt;- nrow(rows_na)</code></pre>
 </div>
 <div id="impute-missing-values" class="section level3">
 <h3>Impute missing values</h3>
-<p>Imputation strategy: Randomly select values for a time interval and replace missing values. <span class="citation">(see Andrew and Jennifer, 534)</span>.</p>
+<p>Imputation strategy: Randomly select from existing values of the same time interval to replace missing values. <span class="citation">(see Andrew and Jennifer, 534)</span>.</p>
 <pre class="r"><code># http://www.stat.columbia.edu/~gelman/arm/missing.pdf see citation above.
 random.imp &lt;- function (a){
     missing &lt;- is.na(a)
