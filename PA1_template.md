@@ -7,20 +7,22 @@ Data set for analysis can be found at the following URL.
 
 [Activity monitoring data](https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip)
 
-Load libraries _data.table, dplyr, tidyr, lubridate_
+### Load libraries
 
 
 ```r
-    library(data.table)
-    library(plyr)
-    library(dplyr)
-    library(tidyr)
-    library(ggplot2)
-    library(lubridate)
-    library(scales)
+library(data.table)
+library(plyr)
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(chron)
+library(knitr)
+
+opts_chunk$set(out.width='900px', dpi=200)
 ```
 
-Download, unpack and read data set.
+### Download, unpack and read data set.
 
 
 ```r
@@ -71,7 +73,7 @@ steps_hist <- steps_hist + theme(strip.background = element_blank(), strip.text 
 steps_hist
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
+<img src="PA1_template_files/figure-html/unnamed-chunk-4-1.png" title="" alt="" width="900px" />
 
 ### Mean and median of the total number of steps taken per day
 
@@ -112,7 +114,7 @@ ave_da_time <- ave_da_time + theme(axis.text.x = element_text(angle = 90, hjust 
 ave_da_time
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
+<img src="PA1_template_files/figure-html/unnamed-chunk-7-1.png" title="" alt="" width="900px" />
 
 ### Interval with the Maximum Step Average 
 
@@ -139,9 +141,7 @@ num_row <- nrow(rows_na)
 
 ### Impute missing values 
 
-Imputation strategy: Randomly select values for a time interval and replace
-
-Simple ramdon sampling based on values from the time interval over the collection period [see @gelmanMissing, pp. 534].
+Imputation strategy: Randomly select values for a time interval and replace missing values. [see @gelmanMissing, pp. 534].
 
 
 ```r
@@ -154,10 +154,13 @@ random.imp <- function (a){
     imputed[missing] <- sample (a.obs, n.missing, replace=TRUE)
     return (imputed)
 }
+# end citation
 
-imputed <- activity %>% group_by(interval) %>% mutate(steps_imp = random.imp(steps))
+imputed_full <- activity %>% group_by(interval) %>% mutate(steps_imp = random.imp(steps))
 
-imputed <- imputed %>% 
+imputed_full <- as.data.table(imputed_full)
+
+imputed <- imputed_full %>% 
     group_by(date) %>% 
     summarise(steps_imp = sum(steps_imp))
 
@@ -184,7 +187,7 @@ steps_hist <- steps_hist + theme(strip.background = element_blank(), strip.text 
 steps_hist
 ```
 
-![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+<img src="PA1_template_files/figure-html/unnamed-chunk-11-1.png" title="" alt="" width="900px" />
 
 ### Mean and median of the total number of steps taken per day
 
@@ -200,7 +203,43 @@ median_imp <- median(imputed$steps_imp)
 **mean imputed**: ~ 10849 (rounded to nearest step)  
 **median imputed**: 11015 
 
-
-
-
 ## Are there differences in activity patterns between weekdays and weekends?
+
+### Factor variable with two levels  weekday and weekend
+
+
+```r
+imputed_full <- imputed_full %>% 
+    mutate(dayofweek = chron::is.weekend(imputed_full$date)*1L) %>% 
+    mutate(dayofweek = factor(dayofweek, labels = c("weekend", "weekday")))
+```
+### Plot weekdays vs weekends average activity
+
+
+
+
+```r
+imputed_wd_we <- imputed_full %>% group_by(dayofweek, interval) %>% summarise(mean_steps = mean(steps_imp))
+
+# convert interval to time
+imputed_wd_we <- imputed_wd_we %>% 
+    mutate(time = sprintf("%04d", interval)) %>% 
+    mutate(time = as.POSIXct(time, format="%H%M", tz="GMT"))
+
+
+wd_we_activity <- ggplot(data = imputed_wd_we, aes(x = time, y = mean_steps)) 
+wd_we_activity <- wd_we_activity + geom_line(color = "red2", size = .5)
+wd_we_activity <- wd_we_activity + scale_x_datetime(breaks = date_breaks("1 hour"), labels = date_format("%I %p"))
+wd_we_activity <- wd_we_activity + facet_wrap(~dayofweek, nrow=2, scales=("fixed"))
+wd_we_activity <- wd_we_activity + labs(title = "Average Steps Weekday vs Weekend", x = "Time of Day", y = "Number of Steps")
+wd_we_activity <- wd_we_activity + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+wd_we_activity
+```
+
+<img src="PA1_template_files/figure-html/unnamed-chunk-14-1.png" title="" alt="" width="900px" />
+
+
+
+
+
+## References
